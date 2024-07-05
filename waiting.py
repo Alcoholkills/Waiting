@@ -7,6 +7,7 @@ import random
 import datetime
 import sys
 import math
+import argparse
 
 class WAITING():
     def __init__(self) -> None:
@@ -86,46 +87,88 @@ class WAITING():
         samples = volume * np.sin(2 * np.pi * frequency * t).astype(np.float32)
         sd.play(samples, samplerate)
         sd.wait()
+    
+    def wait(self):
+        """Simple wait"""
+        try:
+            self.keyboard.tap(Key.f2)
+            time.sleep(20)
+        except KeyboardInterrupt:
+            sys.exit()
+        self.wait()
+    
+    def EoD(self):
+        """End of Day"""
+        now = self.__get_current_time_to_HHMMSS__()
+        if now > self.STOP_WORKING_TIME:
+            return
+        try:
+            self.keyboard.tap(Key.f2)
+            time.sleep(20)
+        except KeyboardInterrupt:
+            sys.exit()
+        self.EoD()
 
-    def SoD(self):
-        """Start of Day"""
+    def BtD(self):
+        """Before the Day"""
         now = self.__get_current_time_to_HHMMSS__()
         if now > self.START_WORKING_TIME:
-            self.__open_teams__()
+            if self.__get_teams_status__().lower() == "none":
+                self.__open_teams__()
             return
-        self.keyboard.tap(Key.f2)
-        time.sleep(20)
-        self.SoD()
+        try:
+            self.keyboard.tap(Key.f2)
+            time.sleep(20)
+        except KeyboardInterrupt:
+            sys.exit()
+        self.BtD()
     
     def DtD(self):
         """During the Day"""
         now = self.__get_current_time_to_HHMMSS__()
-        if now < self.STOP_WORKING_TIME:
+        if now > self.STOP_WORKING_TIME:
             return
-        self.keyboard.tap(Key.f2)
-        status = self.__get_teams_status__()
-        if status.lower() == "none":
-            self.__play_sound__(2, 200, 5)
-        elif status.lower() == "yellow":
-            self.__play_sound__(1,600, 10)
-            self.__play_sound__(2,1,0)
-            self.__play_sound__(1,600, 10)
-            self.__play_sound__(2,1,0)
-            self.__play_sound__(1,600, 10)
-        elif status.lower() == "red":
-            self.__play_sound__(5, 440, 5)
-            self.__play_sound__(2, 1, 0)
-        elif status.lower() == "green":
-            time.sleep(20)
+        try:
+            self.keyboard.tap(Key.f2)
+            status = self.__get_teams_status__()
+            if status.lower() == "none":
+                self.__play_sound__(2, 200, 5)
+            elif status.lower() == "yellow":
+                self.__play_sound__(1,600, 10)
+                self.__play_sound__(2,1,0)
+                self.__play_sound__(1,600, 10)
+                self.__play_sound__(2,1,0)
+                self.__play_sound__(1,600, 10)
+            elif status.lower() == "red":
+                self.__play_sound__(5, 440, 5)
+                self.__play_sound__(2, 1, 0)
+            elif status.lower() == "green":
+                time.sleep(20)
+        except KeyboardInterrupt:
+            sys.exit()
         self.DtD()
     
     def start(self):
         """Starts waiting"""
-        self.SoD()
+        self.BtD()
         self.DtD()
+    
+def main():
+    parser = argparse.ArgumentParser(description='Waiting processes during worktime')
+    parser.add_argument('-w', '--wait', action='store_true', help='Runs WAITING.wait()')
+    parser.add_argument('-eod', '--end_of_day', action='store_true', help='Runs WAITING.EoD()')
+
+    args = parser.parse_args()
+    
+    waiting = WAITING()
+    if args.wait:
+        waiting.wait()
+    elif args.end_of_day:
+        waiting.EoD()
+    else:
+        waiting.start()
 
 
 
 if __name__ == "__main__":
-    ...
-
+    main()
