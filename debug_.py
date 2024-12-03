@@ -27,4 +27,6 @@ def DEBUG_print_pixel_red_at_location(pos: tuple[int, int], size: tuple[int, int
 if __name__ == "__main__":
     mouse_position = (449, 1020)
     # DEBUG_print_mouse_position_continuously()
+    (449, 1020)
+    (22, 22)
     DEBUG_print_pixel_red_at_location(mouse_position, (22, 22))

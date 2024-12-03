@@ -1,4 +1,5 @@
 from pynput.keyboard import Key, Controller
+from pynput.mouse import Controller as MouseController
 import pyautogui
 import sounddevice as sd
 import numpy as np
@@ -8,10 +9,12 @@ import datetime
 import sys
 import math
 import argparse
+from debug_ import DEBUG_print_pixel_red_at_location
 
 class WAITING():
     def __init__(self) -> None:
         self.keyboard = Controller()
+        self.mouse = MouseController()
         self.START_WORKING_TIME = 80000 - random.randint(0, 300)
         self.STOP_WORKING_TIME = 173000 + random.randint(0, 300)
         self.TEAMS_LOCATION = (449, 1020)
@@ -27,6 +30,8 @@ class WAITING():
             "Yellow": self.TEAMS_STATUS_YELLOW,
             "None": self.TEAMS_STATUS_NONE
         }
+        self.counter = 0
+        self.sleepTime = 20
     
     def __get_current_time_to_HHMMSS__(self) -> int:
         """Gets the current time of the day and returns it as an `int` in the form `HHMMSS`"""
@@ -44,6 +49,7 @@ class WAITING():
             if d < min_distance:
                 min_distance = d
                 min_color = k
+        DEBUG_print_pixel_red_at_location(self.SMALL_SCREEN_TEAMS_NOTIFICATION_STATUS, self.TEAMS_NOTIFICATION_STATUS_SIZE)
         return min_color
     
     def __open_teams__(self):
@@ -92,8 +98,8 @@ class WAITING():
         """Simple wait"""
         try:
             while True:
-                self.keyboard.tap(Key.f2)
-                time.sleep(20)
+                self.stayActive()
+                time.sleep(self.sleepTime)
         except KeyboardInterrupt:
             sys.exit()
     
@@ -104,8 +110,8 @@ class WAITING():
                 now = self.__get_current_time_to_HHMMSS__()
                 if now > self.STOP_WORKING_TIME:
                     return
-                self.keyboard.tap(Key.f2)
-                time.sleep(20)
+                self.stayActive()
+                time.sleep(self.sleepTime)
         except KeyboardInterrupt:
             sys.exit()
 
@@ -118,8 +124,8 @@ class WAITING():
                     if self.__get_teams_status__().lower() == "none":
                         self.__open_teams__()
                     return
-                self.keyboard.tap(Key.f2)
-                time.sleep(20)
+                self.stayActive()
+                time.sleep(self.sleepTime)
         except KeyboardInterrupt:
             sys.exit()
     
@@ -131,7 +137,7 @@ class WAITING():
                     now = self.__get_current_time_to_HHMMSS__()
                     if now > self.STOP_WORKING_TIME:
                         return
-                self.keyboard.tap(Key.f2)
+                self.stayActive()
                 status = self.__get_teams_status__()
                 if status.lower() == "none":
                     self.__play_sound__(2, 200, 5)
@@ -145,9 +151,34 @@ class WAITING():
                     self.__play_sound__(3, 440, 5)
                     self.__play_sound__(2, 1, 0)
                 elif status.lower() == "green":
-                    time.sleep(20)
+                    time.sleep(self.sleepTime)
         except KeyboardInterrupt:
             sys.exit()
+    
+    def stayActive(self):
+        lever = 0
+        if lever == 0:
+            self.keyboard.tap(Key.f2)
+        elif lever == 1:
+            self.counter = (self.counter + 1) % 2
+            vector = 1 if self.counter == 0 else -1
+            self.mouse.move(vector,0)
+        elif lever == 2:
+            self.sleepTime = 5
+            self.mouse.move(15, 0)
+            self.mouse.move(-15, 0)
+        elif lever == 3:
+            print(self.mouse.position)
+            self.mouse.move(15, 0)
+            print(self.mouse.position)
+            self.mouse.move(-15, 0)
+
+
+    def test(self):
+        # self.__get_teams_status__()
+        for i in range(5):
+            self.stayActive()
+            time.sleep(0.5)
     
     def start(self):
         """Starts waiting"""
@@ -159,6 +190,7 @@ def main():
     parser.add_argument('-w', '--wait', action='store_true', help='Runs WAITING.wait()')
     parser.add_argument('-eod', '--end_of_day', action='store_true', help='Runs WAITING.EoD()')
     parser.add_argument('-m', '--monitor', action='store_true', help='Endless monitor ; shouts if not green')
+    parser.add_argument('-t', '--test', action='store_true', help='Runs a test of the see and move functions')
 
     args = parser.parse_args()
     
@@ -169,6 +201,8 @@ def main():
         waiting.EoD()
     elif args.monitor:
         waiting.DtD(False)
+    elif args.test:
+        waiting.test()
     else:
         waiting.start()
 
