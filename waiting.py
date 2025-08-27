@@ -15,11 +15,14 @@ class WAITING():
     def __init__(self) -> None:
         self.keyboard = Controller()
         self.mouse = MouseController()
+        self.teams_logo_img_path = r'C:\Users\prambert\Document\Programming\Python\Waiting\Teams_logo.png'
         self.START_WORKING_TIME = 80000 - random.randint(0, 300)
         self.STOP_WORKING_TIME = 173000 + random.randint(0, 300)
-        self.TEAMS_LOCATION = (449, 1020)
-        self.SMALL_SCREEN_TEAMS_NOTIFICATION_STATUS = (449, 1020)
-        self.TEAMS_NOTIFICATION_STATUS_SIZE = (22, 22)
+        self.teams_pos_n_size = pyautogui.locateOnScreen(self.teams_logo_img_path, confidence=0.8)
+        self.TEAMS_LOCATION = teams_logo_pos = (self.teams_pos_n_size.left, self.teams_pos_n_size.top)
+        self.SMALL_SCREEN_TEAMS_NOTIFICATION_STATUS = (self.teams_pos_n_size.left + self.teams_pos_n_size.width // 2, self.teams_pos_n_size.top)
+        self.TEAMS_NOTIFICATION_STATUS_SIZE = (self.teams_pos_n_size.width // 2, self.teams_pos_n_size.height // 2)
+        self.TEAMS_NOTIFICATION_STATUS_SIZE = (13, 13)
         self.TEAMS_STATUS_GREEN = (26, 122, 26)
         self.TEAMS_STATUS_RED = (162, 49, 55)
         self.TEAMS_STATUS_YELLOW = (171, 124, 17)
@@ -32,6 +35,7 @@ class WAITING():
         }
         self.counter = 0
         self.sleepTime = 20
+        
     
     def __get_current_time_to_HHMMSS__(self) -> int:
         """Gets the current time of the day and returns it as an `int` in the form `HHMMSS`"""
@@ -94,6 +98,22 @@ class WAITING():
         sd.play(samples, samplerate)
         sd.wait()
     
+    def maybe_shout(self):
+        status = self.__get_teams_status__()
+        if status.lower() == "none":
+            self.__play_sound__(2, 200, 5)
+        elif status.lower() == "yellow":
+            self.__play_sound__(1,600, 10)
+            self.__play_sound__(2,1,0)
+            self.__play_sound__(1,600, 10)
+            self.__play_sound__(2,1,0)
+            self.__play_sound__(1,600, 10)
+        elif status.lower() == "red":
+            self.__play_sound__(3, 440, 5)
+            self.__play_sound__(2, 1, 0)
+        elif status.lower() == "green":
+            return
+    
     def wait(self):
         """Simple wait"""
         try:
@@ -138,23 +158,14 @@ class WAITING():
                     if now > self.STOP_WORKING_TIME:
                         return
                 self.stayActive()
-                status = self.__get_teams_status__()
-                if status.lower() == "none":
-                    self.__play_sound__(2, 200, 5)
-                elif status.lower() == "yellow":
-                    self.__play_sound__(1,600, 10)
-                    self.__play_sound__(2,1,0)
-                    self.__play_sound__(1,600, 10)
-                    self.__play_sound__(2,1,0)
-                    self.__play_sound__(1,600, 10)
-                elif status.lower() == "red":
-                    self.__play_sound__(3, 440, 5)
-                    self.__play_sound__(2, 1, 0)
-                elif status.lower() == "green":
-                    time.sleep(self.sleepTime)
+                self.maybe_shout()
+                time.sleep(self.sleepTime)
+                
+                
         except KeyboardInterrupt:
             sys.exit()
-    
+
+
     def stayActive(self):
         lever = 0
         if lever == 0:
@@ -180,6 +191,13 @@ class WAITING():
             self.stayActive()
             time.sleep(0.5)
     
+    def debug(self):
+        
+        self.__pixel_color_red_at_location__(
+            pos=(teams_logo_pos.left + teams_logo_pos.width // 2, teams_logo_pos.top)
+            , size=(teams_logo_pos.width // 2, teams_logo_pos.height // 2)
+        )
+    
     def start(self):
         """Starts waiting"""
         self.BtD()
@@ -191,6 +209,7 @@ def main():
     parser.add_argument('-eod', '--end_of_day', action='store_true', help='Runs WAITING.EoD()')
     parser.add_argument('-m', '--monitor', action='store_true', help='Endless monitor ; shouts if not green')
     parser.add_argument('-t', '--test', action='store_true', help='Runs a test of the see and move functions')
+    parser.add_argument('-d', '--debug', action='store_true', help='Debug function to test part of the app')
 
     args = parser.parse_args()
     
@@ -203,6 +222,8 @@ def main():
         waiting.DtD(False)
     elif args.test:
         waiting.test()
+    elif args.test:
+        waiting.debug()
     else:
         waiting.start()
 
