@@ -1,5 +1,7 @@
 import pyautogui
 import sys
+import time
+from pynput import mouse
 
 
 def DEBUG_rgb_colored_block(r, g, b):
@@ -36,12 +38,45 @@ def find_teams_logo():
     # DEBUG_print_pixel_red_at_location((teams_logo_pos.left, teams_logo_pos.top), (teams_logo_pos.width, teams_logo_pos.height))
     DEBUG_print_pixel_red_at_location((teams_logo_pos.left + teams_logo_pos.width // 2, teams_logo_pos.top), (teams_logo_pos.width // 2, teams_logo_pos.height // 2))
 
+def click_to_pos():
+    def on_click(x, y, button, pressed):
+        if button == mouse.Button.right and pressed:
+            print(f"Mouse right-click at: ({x}, {y})")
+        if button == mouse.Button.middle and pressed:
+            exit()
+
+    # Set up the mouse listener
+    with mouse.Listener(on_click=on_click) as listener:
+        listener.join()
+
+def auto_click_machine():
+    time.sleep(5)
+    for i in range(274):
+        # Selection de toutes les missions
+        pyautogui.click(39, 320)
+        # clique droit sur une mission
+        time.sleep(0.2)
+        pyautogui.rightClick(310, 498)
+        # Bloquer mission
+        time.sleep(0.2)
+        pyautogui.click(429, 266)
+        # valider
+        time.sleep(0.5)
+        pyautogui.click(1038, 195)
+        # Attente recharchement
+        time.sleep(2)
+
+# Mouse right-click at: (39, 320)
+# Mouse right-click at: (310, 498)
+# Mouse right-click at: (429, 266)
+# Mouse right-click at: (1038, 195)
+
 if __name__ == "__main__":
     # mouse_position = (449, 1020)
     # mouse_position = (299, 1040)
     # mouse_position = (300, 1401)
-    # DEBUG_print_mouse_position_continuously()
+    auto_click_machine()
     # (449, 1020)
     # (22, 22)
     # DEBUG_print_pixel_red_at_location(mouse_position, (13, 13))
-    find_teams_logo()
+    # find_teams_logo()

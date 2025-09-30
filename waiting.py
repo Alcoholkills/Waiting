@@ -18,7 +18,7 @@ class WAITING():
         self.teams_logo_img_path = r'C:\Users\prambert\Document\Programming\Python\Waiting\Teams_logo.png'
         self.START_WORKING_TIME = 80000 - random.randint(0, 300)
         self.STOP_WORKING_TIME = 173000 + random.randint(0, 300)
-        self.teams_pos_n_size = pyautogui.locateOnScreen(self.teams_logo_img_path, confidence=0.8)
+        self.teams_pos_n_size = pyautogui.locateOnScreen(self.teams_logo_img_path, confidence=0.75)
         self.TEAMS_LOCATION = teams_logo_pos = (self.teams_pos_n_size.left, self.teams_pos_n_size.top)
         self.SMALL_SCREEN_TEAMS_NOTIFICATION_STATUS = (self.teams_pos_n_size.left + self.teams_pos_n_size.width // 2, self.teams_pos_n_size.top)
         self.TEAMS_NOTIFICATION_STATUS_SIZE = (self.teams_pos_n_size.width // 2, self.teams_pos_n_size.height // 2)
